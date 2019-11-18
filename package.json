@@ -1,0 +1,22 @@
+{
+  "name": "typescript-de",
+  "version": "1.0.0",
+  "description": "TypeScriptを勉強するためのテストソース",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/t-develop/TypeScript-DE.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/t-develop/TypeScript-DE/issues"
+  },
+  "homepage": "https://github.com/t-develop/TypeScript-DE#readme",
+  "dependencies": {
+    "jquery": "^3.4.1"
+  }
+}

@@ -1,9 +1,10 @@
 import TestFunctions = require('./TestFunctions');
 import Population = require('./Population');
 
-function DifferentialEvolution(init_popSize: number, init_varSIze: number) {
+function DifferentialEvolution(init_popSize: number, init_varSIze: number, init_generation: number) {
   let popSize = init_popSize;
   let varSize = init_varSIze;
+  let maxGeneration = init_generation;
   let TF = new TestFunctions.TestFunctions();
 
   let population: Array<Population.Population> = [];  // 母集団
@@ -26,11 +27,11 @@ function DifferentialEvolution(init_popSize: number, init_varSIze: number) {
     population[pop].evaluationValue = TF.Rastrign(population[pop].variable);
 
     // ベスト個体の保存
-    bestIndividual = population[getMin_Eval_ValuePop_Number(population)];
+    bestIndividual = population[getBestPopulationNumber(population)];
   }
 
   // 世代数分ループ
-  for (let generation = 0; generation < 100; generation++) {
+  for (let generation = 0; generation < maxGeneration; generation++) {
     // 母集団のループ
     population.forEach(indiv => {
       indiv.generation++;  // 世代数の更新
@@ -43,7 +44,7 @@ function DifferentialEvolution(init_popSize: number, init_varSIze: number) {
       let r1 = getRandomArbitrary(0, popSize + 1);
       let r2 = getRandomArbitrary(0, popSize + 1);
       let r3 = getRandomArbitrary(0, popSize + 1);
-      while (r1 === r2 && r2 === r3 && r3 === r1) {
+      while (r1 === r2 || r2 === r3 || r3 === r1) {
         r1 = getRandomArbitrary(0, popSize + 1);
         r2 = getRandomArbitrary(0, popSize + 1);
         r3 = getRandomArbitrary(0, popSize + 1);
@@ -68,7 +69,7 @@ function DifferentialEvolution(init_popSize: number, init_varSIze: number) {
       }
     });
     // ベスト個体の保存
-    bestIndividual = population[getMin_Eval_ValuePop_Number(population)]
+    bestIndividual = population[getBestPopulationNumber(population)]
 
   }
 }
@@ -77,7 +78,7 @@ function getRandomArbitrary(min: number, max: number): number {
   return Math.random() * (max - min) + min;
 }
 
-function getMin_Eval_ValuePop_Number(population: Array<Population.Population>): number {
+function getBestPopulationNumber(population: Array<Population.Population>): number {
   let bestPopNumber: number = 0;
   for (let popNum = 1; popNum < population.length; popNum++) {
     if (population[bestPopNumber].evaluationValue > population[popNum].evaluationValue) {
@@ -85,4 +86,21 @@ function getMin_Eval_ValuePop_Number(population: Array<Population.Population>): 
     }
   }
   return bestPopNumber;
+}
+
+function main(): void{
+  $(".optimization").click(function(){
+    let populationSize = parseInt(document.getElementById('.population').value);
+    parseInt($(function(){
+      $('.population').val()
+    }));
+    let variableSize = $(function(){
+      $(".variable").val();
+    });
+    let maxGeneration = $(function(){
+      $(".generation").val();
+    });
+  
+    DifferentialEvolution(populationSize, variableSize, maxGeneration);
+  });
 }
