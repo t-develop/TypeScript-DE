@@ -90,17 +90,16 @@ function getBestPopulationNumber(population: Array<Population.Population>): numb
 
 function main(): void{
   $(".optimization").click(function(){
-    let populationSize = parseInt(document.getElementById('.population').value);
-    parseInt($(function(){
-      $('.population').val()
-    }));
-    let variableSize = $(function(){
-      $(".variable").val();
-    });
-    let maxGeneration = $(function(){
-      $(".generation").val();
-    });
+
+    // 入力値の取得
+    const populationElement: HTMLInputElement = <HTMLInputElement>document.getElementById('.population');
+    const variableElement: HTMLInputElement = <HTMLInputElement>document.getElementById('.variable');
+    const generationElement: HTMLInputElement = <HTMLInputElement>document.getElementById('.generation');
+    let populationSize = populationElement.valueAsNumber;
+    let variableSize = variableElement.valueAsNumber;
+    let maxGeneration = generationElement.valueAsNumber;
   
+    // 差分進化の実行
     DifferentialEvolution(populationSize, variableSize, maxGeneration);
   });
 }
