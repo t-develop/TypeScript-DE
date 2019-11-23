@@ -1,5 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 var TestFunctions = /** @class */ (function () {
     function TestFunctions() {
     }
@@ -21,4 +19,4 @@ var TestFunctions = /** @class */ (function () {
     };
     return TestFunctions;
 }());
-exports.TestFunctions = TestFunctions;
+export default TestFunctions;

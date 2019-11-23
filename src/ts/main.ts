@@ -1,20 +1,63 @@
-import TestFunctions = require('./TestFunctions');
-import Population = require('./Population');
+//import TestFunctions from "./TestFunctions";
+//import Population from "./Population";
+
+interface IPopulation {
+  variable: Array<number>;
+  evaluationValue: number;
+}
+
+class Population implements IPopulation {
+  variable: Array<number> = [];  // 設計変数
+  evaluationValue: number = 99999999;  // 評価値
+  cr: number = 0;  // 交差率
+  scallingFactor: number = 0;  // スケーリングファクターF
+  popNumber: number = 0;  // 個体番号
+  generation: number = 0;
+
+  constructor(var_size: number, init_value: number, init_CR: number, init_SF: number, init_popNum: number) {
+    this.variable = new Array(var_size);
+    this.evaluationValue = init_value;
+    this.cr = init_CR;
+    this.scallingFactor = init_SF;
+    this.popNumber = init_popNum;
+  }
+}
+
+class TestFunctions {
+
+  /** 
+   * Rastrign
+  variable: Array<number> : number  */
+  public Rastrign(variable: Array<number>): number {
+    let sum: number = 0;
+    variable.forEach(variable => {
+      sum += Math.pow(variable, 2) - 10 * Math.cos(2 * Math.PI * variable);
+    });
+    return 10 * variable.length + sum;
+  }
+
+  /**
+   * Schwefel
+  variable: Array<number> : number  */
+  public Schwefel(variable: Array<number>): number {
+    return 0;
+  }
+}
 
 function DifferentialEvolution(init_popSize: number, init_varSIze: number, init_generation: number) {
   let popSize = init_popSize;
   let varSize = init_varSIze;
   let maxGeneration = init_generation;
-  let TF = new TestFunctions.TestFunctions();
+  let TF = new TestFunctions();
 
-  let population: Array<Population.Population> = [];  // 母集団
-  let childPopulation: Array<Population.Population> = [];  // 子個体母集団
-  let bestIndividual: Population.Population = new Population.Population(10, 0, 0.5, 0.5, -1);  // ベスト解
+  let population: Array<Population> = [];  // 母集団
+  let childPopulation: Array<Population> = [];  // 子個体母集団
+  let bestIndividual: Population = new Population(varSize, 99999999, 0.5, 0.5, -1);  // ベスト解
 
   // 母集団の生成
   for (let i = 0; i < popSize; i++) {
-    population.push(new Population.Population(10, 0, 0.5, 0.5, i));
-    childPopulation.push(new Population.Population(10, 0, 0.5, 0.5, i));
+    population.push(new Population(varSize, 99999999, 0.5, 0.5, i));
+    childPopulation.push(new Population(varSize, 99999999, 0.5, 0.5, i));
   }
 
   // 母集団の初期化
@@ -70,15 +113,19 @@ function DifferentialEvolution(init_popSize: number, init_varSIze: number, init_
     });
     // ベスト個体の保存
     bestIndividual = population[getBestPopulationNumber(population)]
-
+    alert(String(bestIndividual.evaluationValue));
   }
+  let output = <HTMLInputElement>document.getElementById('.result');
+  //output.valueAsNumber = bestIndividual.evaluationValue;
+  //output.innerHTML = String(bestIndividual.evaluationValue);
+  alert(String(bestIndividual.evaluationValue));
 }
 
 function getRandomArbitrary(min: number, max: number): number {
   return Math.random() * (max - min) + min;
 }
 
-function getBestPopulationNumber(population: Array<Population.Population>): number {
+function getBestPopulationNumber(population: Array<Population>): number {
   let bestPopNumber: number = 0;
   for (let popNum = 1; popNum < population.length; popNum++) {
     if (population[bestPopNumber].evaluationValue > population[popNum].evaluationValue) {
@@ -88,19 +135,13 @@ function getBestPopulationNumber(population: Array<Population.Population>): numb
   return bestPopNumber;
 }
 
-function main(): void{
-  $(".optimization").click(function(){
-    let populationSize = parseInt(document.getElementById('.population').value);
-    parseInt($(function(){
-      $('.population').val()
-    }));
-    let variableSize = $(function(){
-      $(".variable").val();
-    });
-    let maxGeneration = $(function(){
-      $(".generation").val();
-    });
-  
-    DifferentialEvolution(populationSize, variableSize, maxGeneration);
-  });
+function main(): void {
+  const numOfPopulation = document.getElementById(".population");
+  const numOfVariable = document.getElementById('.variable');
+  const numOfGeneration = document.getElementById('.generation');
+  let populationSize = Number(numOfPopulation);
+  let variableSize = Number(numOfVariable);
+  let maxGeneration = Number(numOfGeneration);
+  //alert(populationSize);
+  DifferentialEvolution(100, 10, 10);
 }
