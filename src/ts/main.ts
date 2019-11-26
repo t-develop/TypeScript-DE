@@ -147,7 +147,7 @@ function DifferentialEvolution(init_popSize: number, init_varSIze: number, init_
   console.log('Final best value : ' + String(bestIndividual.evaluationValue));
 }
 
-function CreateChildren(population: Array<Population>, childPopulation: Array<Population>, TF: TestFunctions, callback: () => void) {
+function CreateChildren(population: Array<Population>, childPopulation: Array<Population>, TF: TestFunctions, callback: Function) {
   // 母集団のループ
   let popSize = population.length;
   let varSize = population[0].variable.length;
@@ -186,7 +186,7 @@ function CreateChildren(population: Array<Population>, childPopulation: Array<Po
   callback();
 }
 
-function UpdatePopulation(population: Array<Population>, childPopulation: Array<Population>, callback: any) {
+function UpdatePopulation(population: Array<Population>, childPopulation: Array<Population>, callback: void) {
   // 母集団の解更新
   for (let popNum = 0; popNum < population.length; popNum++) {
     if (childPopulation[popNum].evaluationValue < population[popNum].evaluationValue) {
