@@ -1,11 +1,11 @@
-import IPopulation = require('./IPopulation');
+import IPopulation from "./IPopulation";
 
 /*
 母集団を形成するための個体を定義
 最低限必要な要素はIPopulationを実装する形で定義し、
 独自で必要な要素をここで定義する
 */
-export class Population implements IPopulation.IPopulation {
+export default class Population implements IPopulation {
   variable: Array<number> = [];  // 設計変数
   evaluationValue: number = 0;  // 評価値
   cr: number = 0;  // 交差率

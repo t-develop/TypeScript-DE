@@ -1,4 +1,4 @@
-export class TestFunctions {
+export default class TestFunctions {
 
   /** 
    * Rastrign

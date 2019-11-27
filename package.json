@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/t-develop/TypeScript-DE#readme",
   "dependencies": {
+    "@types/jquery": "^3.3.31",
     "jquery": "^3.4.1"
   }
 }

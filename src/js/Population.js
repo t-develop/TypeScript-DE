@@ -1,5 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 /*
 母集団を形成するための個体を定義
 最低限必要な要素はIPopulationを実装する形で定義し、
@@ -21,4 +19,4 @@ var Population = /** @class */ (function () {
     }
     return Population;
 }());
-exports.Population = Population;
+export default Population;

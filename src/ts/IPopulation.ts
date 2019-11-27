@@ -1,4 +1,4 @@
-export interface IPopulation {
+export default interface IPopulation {
   variable: Array<number>;
   evaluationValue: number;
 }
