@@ -1,8 +1,5 @@
 //import TestFunctions from "./TestFunctions";
 //import Population from "./Population";
-'use strict';
-
-import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from "constants";
 
 interface IPopulation {
   variable: Array<number>;
@@ -51,20 +48,15 @@ class TestFunctions {
   }
 }
 
-function main(): void{
-  $(".optimization").click(function(){
-
-    // 入力値の取得
-    const populationElement: HTMLInputElement = <HTMLInputElement>document.getElementById('.population');
-    const variableElement: HTMLInputElement = <HTMLInputElement>document.getElementById('.variable');
-    const generationElement: HTMLInputElement = <HTMLInputElement>document.getElementById('.generation');
-    let populationSize = populationElement.valueAsNumber;
-    let variableSize = variableElement.valueAsNumber;
-    let maxGeneration = generationElement.valueAsNumber;
-  
-    // 差分進化の実行
-    DifferentialEvolution(populationSize, variableSize, maxGeneration);
-  });
+function main(): void {
+  const numOfPopulation = document.getElementById(".population");
+  const numOfVariable = document.getElementById('.variable');
+  const numOfGeneration = document.getElementById('.generation');
+  let populationSize = Number(numOfPopulation);
+  let variableSize = Number(numOfVariable);
+  let maxGeneration = Number(numOfGeneration);
+  //alert(populationSize);
+  DifferentialEvolution(100, 10, 20);
 }
 
 async function DifferentialEvolution(init_popSize: number, init_varSIze: number, init_generation: number) {
@@ -76,7 +68,7 @@ async function DifferentialEvolution(init_popSize: number, init_varSIze: number,
 
   let population: Array<Population> = [];  // 母集団
   let childPopulation: Array<Population> = [];  // 子個体母集団
-  let bestIndividual: Population = new Population(varSize, 99999999, 0.5, 0.5, -1, -5.12, 5.12);  // ベスト解
+  let bestIndivArray: Array<Population> = [];
 
   // 母集団の生成
   for (let i = 0; i < popSize; i++) {
@@ -85,18 +77,15 @@ async function DifferentialEvolution(init_popSize: number, init_varSIze: number,
   }
 
   // 母集団の初期化
-  for (let pop = 0; pop < popSize; pop++) {
-    // 各個体の設計変数を初期化
-    for (let varNum = 0; varNum < varSize; varNum++) {
-      population[pop].variable[varNum] = getRandomArbitrary(-5.2, 5.2);
-    }
-    // 評価
-    population[pop].evaluationValue = TF.Rastrign(population[pop].variable);
+  await Initialization(population, population[0].lowerBound, population[0].upperBound);
 
-    // ベスト個体の保存
-    bestIndividual = population[getBestPopulationNumber(population)];
-    firstBest = bestIndividual.evaluationValue;
-  }
+  // 評価
+  await Evaluation(population, TF);
+
+  // ベスト個体の保存
+  await UpdateBest(population, bestIndivArray);
+  firstBest = bestIndivArray[0].evaluationValue;
+
 
   // 世代数分ループ
   for (let generation = 0; generation < maxGeneration; generation++) {
@@ -104,22 +93,25 @@ async function DifferentialEvolution(init_popSize: number, init_varSIze: number,
     await CreateChildren(population, childPopulation, TF);  // 子個体集団の生成
     await Evaluation(childPopulation, TF);  // 評価
     await UpdatePopulation(population, childPopulation);  // 母集団の更新
-    await UpdateBest(population, bestIndividual);  // ベスト解の更新
-      
-    
-    //console.log('Best Individual Number : ' + String(getBestPopulationNumber(population)));
-    //console.log('Generation : ' + String(bestIndividual.generation) + ' Best value : ' + String(bestIndividual.evaluationValue));
+    await UpdateBest(population, bestIndivArray);  // ベスト解の更新
+
   }
   let output = <HTMLInputElement>document.getElementById('.result');
-  //output.valueAsNumber = bestIndividual.evaluationValue;
-  //output.innerHTML = String(bestIndividual.evaluationValue);
   console.log('first best : ' + String(firstBest));
-  console.log('Final best value : ' + String(bestIndividual.evaluationValue));
+  console.log('Final best value : ' + String(bestIndivArray[bestIndivArray.length - 1].evaluationValue));
+
 }
 
+async function Initialization(population: Array<Population>, lowerBound: number, upperBound: number) {
+  for (let pop = 0; pop < population.length; pop++) {
+    // 各個体の設計変数を初期化
+    for (let varNum = 0; varNum < population[pop].variable.length; varNum++) {
+      population[pop].variable[varNum] = getRandomArbitrary(lowerBound, upperBound);
+    }
+  }
+}
 
 async function CreateChildren(population: Array<Population>, childPopulation: Array<Population>, TF: TestFunctions) {
-  
   let popSize = population.length;
   let varSize = population[0].variable.length;
   let r1 = 0;
@@ -136,27 +128,28 @@ async function CreateChildren(population: Array<Population>, childPopulation: Ar
     await SelectPopulationNumber(r1, r2, r3, popSize);
 
     childPopulation[popNum].variable = population[popNum].variable;  // 親個体の変数を引継ぎ
-
+    console.log('pop ' + popNum + ' var : ' + population[popNum].variable);
+    console.log('chi ' + popNum + ' var : ' + childPopulation[popNum].variable);
     // 交叉による変数の変更
     await CrossOver(population, childPopulation, popNum, cross_varNum, r1, r2, r3);
   }
 }
 
 async function SelectPopulationNumber(r1: number, r2: number, r3: number, popSize: number) {
-    // 交叉のための個体番号を取得
+  // 交叉のための個体番号を取得
+  r1 = getIntegerRandomNumber(0, popSize);
+  r2 = getIntegerRandomNumber(0, popSize);
+  r3 = getIntegerRandomNumber(0, popSize);
+  while (r1 === r2 || r2 === r3 || r3 === r1) {
     r1 = getIntegerRandomNumber(0, popSize);
     r2 = getIntegerRandomNumber(0, popSize);
     r3 = getIntegerRandomNumber(0, popSize);
-    while (r1 === r2 || r2 === r3 || r3 === r1) {
-      r1 = getIntegerRandomNumber(0, popSize);
-      r2 = getIntegerRandomNumber(0, popSize);
-      r3 = getIntegerRandomNumber(0, popSize);
-    }
+  }
 }
 
 async function CrossOver(population: Array<Population>, childPopulation: Array<Population>, popNum: number, cross_varNum: number, r1: number, r2: number, r3: number) {
-   // 交叉による変数の変更
-   for (let varNum = 0; varNum < population[popNum].variable.length - 1; varNum++) {
+  // 交叉による変数の変更
+  for (let varNum = 0; varNum < population[popNum].variable.length - 1; varNum++) {
     if (varNum === cross_varNum || population[popNum].cr > getRandomArbitrary(0, 1)) {
       childPopulation[popNum].variable[varNum] = population[r1].variable[varNum] + population[popNum].scallingFactor * (population[r2].variable[varNum] - population[r3].variable[varNum]);
       if (childPopulation[population[popNum].popNumber].variable[varNum] < population[popNum].lowerBound) {
@@ -167,13 +160,13 @@ async function CrossOver(population: Array<Population>, childPopulation: Array<P
       }
     }
   }
+  //console.log(childPopulation[popNum].variable);
 }
 
-async function Evaluation(childPopulation: Array<Population>, TF: TestFunctions) {
-  for(let childNum = 0; childNum < childPopulation.length; childNum++)
-  {
+async function Evaluation(population: Array<Population>, TF: TestFunctions) {
+  for (let childNum = 0; childNum < population.length; childNum++) {
     // 評価
-    childPopulation[childNum].evaluationValue = TF.Rastrign(childPopulation[childNum].variable);
+    population[childNum].evaluationValue = TF.Rastrign(population[childNum].variable);
   }
 }
 
@@ -186,13 +179,10 @@ async function UpdatePopulation(population: Array<Population>, childPopulation: 
   }
 }
 
-async function UpdateBest(population: Array<Population>, bestIndividual: Population) {
+async function UpdateBest(population: Array<Population>, bestIndivArray: Array<Population>) {
   // ベスト個体の保存
   let bestPopNumber = getBestPopulationNumber(population);
-  if (bestIndividual.evaluationValue > population[bestPopNumber].evaluationValue) {
-    console.log('indiv.evaluation:' + String(population[bestPopNumber].evaluationValue) + ' bestIndiv.evaluation:' + String(bestIndividual.evaluationValue));
-    bestIndividual = population[bestPopNumber];
-  }
+  bestIndivArray.push(population[bestPopNumber]);
 }
 
 function getRandomArbitrary(min: number, max: number): number {
