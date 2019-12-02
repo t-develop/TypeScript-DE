@@ -56,7 +56,7 @@ function main(): void {
   let variableSize = Number(numOfVariable);
   let maxGeneration = Number(numOfGeneration);
   //alert(populationSize);
-  DifferentialEvolution(100, 10, 20);
+  DifferentialEvolution(100, 10, 100);
 }
 
 async function DifferentialEvolution(init_popSize: number, init_varSIze: number, init_generation: number) {
@@ -65,6 +65,10 @@ async function DifferentialEvolution(init_popSize: number, init_varSIze: number,
   let maxGeneration = init_generation;
   let TF = new TestFunctions();
   let firstBest: number = 0.0;
+  let cr = 0.8;
+  let scallingFactor = 0.5;
+  let lowerBound = -5.2;
+  let upperBound = 5.2;
 
   let population: Array<Population> = [];  // 母集団
   let childPopulation: Array<Population> = [];  // 子個体母集団
@@ -72,9 +76,9 @@ async function DifferentialEvolution(init_popSize: number, init_varSIze: number,
 
   // 母集団の生成
   for (let i = 0; i < popSize; i++) {
-    population.push(new Population(varSize, 99999999, 0.5, 0.5, i, -5.12, 5.12));
-    childPopulation.push(new Population(varSize, 99999999, 0.5, 0.5, i, -5.12, 5.12));
+    population.push(new Population(varSize, 99999999, cr, scallingFactor, i, lowerBound, upperBound));
   }
+  childPopulation = population;
 
   // 母集団の初期化
   await Initialization(population, population[0].lowerBound, population[0].upperBound);
@@ -86,20 +90,17 @@ async function DifferentialEvolution(init_popSize: number, init_varSIze: number,
   await UpdateBest(population, bestIndivArray);
   firstBest = bestIndivArray[0].evaluationValue;
 
-
   // 世代数分ループ
-  for (let generation = 0; generation < maxGeneration; generation++) {
-
+  for (let generation = 1; generation < maxGeneration; generation++) {
     await CreateChildren(population, childPopulation, TF);  // 子個体集団の生成
     await Evaluation(childPopulation, TF);  // 評価
     await UpdatePopulation(population, childPopulation);  // 母集団の更新
     await UpdateBest(population, bestIndivArray);  // ベスト解の更新
-
+    console.log('generation : ' + generation);
   }
   let output = <HTMLInputElement>document.getElementById('.result');
   console.log('first best : ' + String(firstBest));
   console.log('Final best value : ' + String(bestIndivArray[bestIndivArray.length - 1].evaluationValue));
-
 }
 
 async function Initialization(population: Array<Population>, lowerBound: number, upperBound: number) {
@@ -114,9 +115,8 @@ async function Initialization(population: Array<Population>, lowerBound: number,
 async function CreateChildren(population: Array<Population>, childPopulation: Array<Population>, TF: TestFunctions) {
   let popSize = population.length;
   let varSize = population[0].variable.length;
-  let r1 = 0;
-  let r2 = 0;
-  let r3 = 0;
+  let rNum: Array<number> = [0, 0, 0];
+  let tmpChild: Array<Population> = childPopulation;
 
   // 母集団のループ
   for (let popNum = 0; popNum < popSize; popNum++) {
@@ -125,64 +125,89 @@ async function CreateChildren(population: Array<Population>, childPopulation: Ar
     let cross_varNum = getIntegerRandomNumber(0, varSize + 1);  // 交差する変数の選択
 
     // 交叉のための個体番号を取得
-    await SelectPopulationNumber(r1, r2, r3, popSize);
+    await SelectPopulationNumber(popSize, rNum);
 
-    childPopulation[popNum].variable = population[popNum].variable;  // 親個体の変数を引継ぎ
-    console.log('pop ' + popNum + ' var : ' + population[popNum].variable);
-    console.log('chi ' + popNum + ' var : ' + childPopulation[popNum].variable);
+    tmpChild[popNum].variable = population[popNum].variable;  // 親個体の変数を引継ぎ
+    //console.log(' var : ' + population[popNum].variable);
     // 交叉による変数の変更
-    await CrossOver(population, childPopulation, popNum, cross_varNum, r1, r2, r3);
+    await CrossOver(population, tmpChild, popNum, cross_varNum, rNum);
   }
+  childPopulation = tmpChild;
 }
 
-async function SelectPopulationNumber(r1: number, r2: number, r3: number, popSize: number) {
+async function SelectPopulationNumber(popSize: number, rNum: Array<number>) {
   // 交叉のための個体番号を取得
-  r1 = getIntegerRandomNumber(0, popSize);
-  r2 = getIntegerRandomNumber(0, popSize);
-  r3 = getIntegerRandomNumber(0, popSize);
-  while (r1 === r2 || r2 === r3 || r3 === r1) {
-    r1 = getIntegerRandomNumber(0, popSize);
-    r2 = getIntegerRandomNumber(0, popSize);
-    r3 = getIntegerRandomNumber(0, popSize);
+  rNum[0] = getIntegerRandomNumber(0, popSize);
+  rNum[1] = getIntegerRandomNumber(0, popSize);
+  rNum[2] = getIntegerRandomNumber(0, popSize);
+  while (rNum[0] === rNum[1] || rNum[1] === rNum[2] || rNum[2] === rNum[0]) {
+    rNum[0] = getIntegerRandomNumber(0, popSize);
+    rNum[1] = getIntegerRandomNumber(0, popSize);
+    rNum[2] = getIntegerRandomNumber(0, popSize);
   }
 }
 
-async function CrossOver(population: Array<Population>, childPopulation: Array<Population>, popNum: number, cross_varNum: number, r1: number, r2: number, r3: number) {
+async function CrossOver(population: Array<Population>, childPopulation: Array<Population>, popNum: number, cross_varNum: number, rNum: Array<number>) {
+  let variable = childPopulation[popNum].variable;
   // 交叉による変数の変更
   for (let varNum = 0; varNum < population[popNum].variable.length - 1; varNum++) {
     if (varNum === cross_varNum || population[popNum].cr > getRandomArbitrary(0, 1)) {
-      childPopulation[popNum].variable[varNum] = population[r1].variable[varNum] + population[popNum].scallingFactor * (population[r2].variable[varNum] - population[r3].variable[varNum]);
-      if (childPopulation[population[popNum].popNumber].variable[varNum] < population[popNum].lowerBound) {
-        childPopulation[popNum].variable[varNum] = population[popNum].lowerBound;
+
+      variable[varNum] = population[rNum[0]].variable[varNum] + population[popNum].scallingFactor * (population[rNum[1]].variable[varNum] - population[rNum[2]].variable[varNum]);
+
+      // 上下限値の修正
+      if (variable[varNum] < population[popNum].lowerBound) {
+        variable[varNum] = population[popNum].lowerBound;
       }
-      if (childPopulation[popNum].variable[varNum] > population[popNum].upperBound) {
-        childPopulation[popNum].variable[varNum] = population[popNum].upperBound;
+      if (variable[varNum] > population[popNum].upperBound) {
+        variable[varNum] = population[popNum].upperBound;
       }
     }
   }
-  //console.log(childPopulation[popNum].variable);
+  childPopulation[popNum].variable = variable;
 }
 
 async function Evaluation(population: Array<Population>, TF: TestFunctions) {
-  for (let childNum = 0; childNum < population.length; childNum++) {
+  let tmpPopulation: Array<Population> = population;
+  for (let popNum = 0; popNum < population.length; popNum++) {
     // 評価
-    population[childNum].evaluationValue = TF.Rastrign(population[childNum].variable);
+    tmpPopulation[popNum].evaluationValue = TF.Rastrign(population[popNum].variable);
   }
+  population = tmpPopulation;
 }
 
 async function UpdatePopulation(population: Array<Population>, childPopulation: Array<Population>) {
   // 母集団の解更新
+  let tmpPopulation: Array<Population> = [];
   for (let popNum = 0; popNum < population.length; popNum++) {
     if (childPopulation[popNum].evaluationValue < population[popNum].evaluationValue) {
-      population[popNum] = childPopulation[popNum];
+      tmpPopulation.push(childPopulation[popNum]);
+    }
+    else {
+      tmpPopulation.push(population[popNum]);
     }
   }
+  population = tmpPopulation;
 }
 
 async function UpdateBest(population: Array<Population>, bestIndivArray: Array<Population>) {
   // ベスト個体の保存
-  let bestPopNumber = getBestPopulationNumber(population);
-  bestIndivArray.push(population[bestPopNumber]);
+  let bestPopNumber: Array<number> = [];
+  await getBestPopulationNumber(population, bestPopNumber);
+  console.log('best num : ' + bestPopNumber);
+  bestIndivArray.push(population[bestPopNumber[0]]);
+  console.log('best : ' + population[bestPopNumber[0]].evaluationValue);
+}
+
+async function getBestPopulationNumber(population: Array<Population>, bestPopNumber: Array<number>) {
+  //let bestPopNumber: number = 0;
+  bestPopNumber.push(0);
+  for (let popNum = 1; popNum < population.length; popNum++) {
+    if (population[popNum].evaluationValue < population[bestPopNumber[0]].evaluationValue) {
+      bestPopNumber[0] = popNum;
+    }
+  }
+  //return bestPopNumber;
 }
 
 function getRandomArbitrary(min: number, max: number): number {
@@ -191,14 +216,4 @@ function getRandomArbitrary(min: number, max: number): number {
 
 function getIntegerRandomNumber(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min)) + min;
-}
-
-function getBestPopulationNumber(population: Array<Population>): number {
-  let bestPopNumber: number = 0;
-  for (let popNum = 1; popNum < population.length; popNum++) {
-    if (population[bestPopNumber].evaluationValue > population[popNum].evaluationValue) {
-      bestPopNumber = popNum;
-    }
-  }
-  return bestPopNumber;
 }

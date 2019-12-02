@@ -86,11 +86,11 @@ function main() {
     var variableSize = Number(numOfVariable);
     var maxGeneration = Number(numOfGeneration);
     //alert(populationSize);
-    DifferentialEvolution(100, 10, 20);
+    DifferentialEvolution(100, 10, 100);
 }
 function DifferentialEvolution(init_popSize, init_varSIze, init_generation) {
     return __awaiter(this, void 0, void 0, function () {
-        var popSize, varSize, maxGeneration, TF, firstBest, population, childPopulation, bestIndivArray, i, generation, output;
+        var popSize, varSize, maxGeneration, TF, firstBest, cr, scallingFactor, lowerBound, upperBound, population, childPopulation, bestIndivArray, i, generation, output;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -99,14 +99,18 @@ function DifferentialEvolution(init_popSize, init_varSIze, init_generation) {
                     maxGeneration = init_generation;
                     TF = new TestFunctions();
                     firstBest = 0.0;
+                    cr = 0.8;
+                    scallingFactor = 0.5;
+                    lowerBound = -5.2;
+                    upperBound = 5.2;
                     population = [];
                     childPopulation = [];
                     bestIndivArray = [];
                     // 母集団の生成
                     for (i = 0; i < popSize; i++) {
-                        population.push(new Population(varSize, 99999999, 0.5, 0.5, i, -5.12, 5.12));
-                        childPopulation.push(new Population(varSize, 99999999, 0.5, 0.5, i, -5.12, 5.12));
+                        population.push(new Population(varSize, 99999999, cr, scallingFactor, i, lowerBound, upperBound));
                     }
+                    childPopulation = population;
                     // 母集団の初期化
                     return [4 /*yield*/, Initialization(population, population[0].lowerBound, population[0].upperBound)];
                 case 1:
@@ -123,7 +127,7 @@ function DifferentialEvolution(init_popSize, init_varSIze, init_generation) {
                     // ベスト個体の保存
                     _a.sent();
                     firstBest = bestIndivArray[0].evaluationValue;
-                    generation = 0;
+                    generation = 1;
                     _a.label = 4;
                 case 4:
                     if (!(generation < maxGeneration)) return [3 /*break*/, 10];
@@ -139,6 +143,7 @@ function DifferentialEvolution(init_popSize, init_varSIze, init_generation) {
                     return [4 /*yield*/, UpdateBest(population, bestIndivArray)];
                 case 8:
                     _a.sent(); // ベスト解の更新
+                    console.log('generation : ' + generation);
                     _a.label = 9;
                 case 9:
                     generation++;
@@ -168,15 +173,14 @@ function Initialization(population, lowerBound, upperBound) {
 }
 function CreateChildren(population, childPopulation, TF) {
     return __awaiter(this, void 0, void 0, function () {
-        var popSize, varSize, r1, r2, r3, popNum, cross_varNum;
+        var popSize, varSize, rNum, tmpChild, popNum, cross_varNum;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     popSize = population.length;
                     varSize = population[0].variable.length;
-                    r1 = 0;
-                    r2 = 0;
-                    r3 = 0;
+                    rNum = [0, 0, 0];
+                    tmpChild = childPopulation;
                     popNum = 0;
                     _a.label = 1;
                 case 1:
@@ -184,85 +188,96 @@ function CreateChildren(population, childPopulation, TF) {
                     population[popNum].generation++; // 世代数の更新
                     cross_varNum = getIntegerRandomNumber(0, varSize + 1);
                     // 交叉のための個体番号を取得
-                    return [4 /*yield*/, SelectPopulationNumber(r1, r2, r3, popSize)];
+                    return [4 /*yield*/, SelectPopulationNumber(popSize, rNum)];
                 case 2:
                     // 交叉のための個体番号を取得
                     _a.sent();
-                    childPopulation[popNum].variable = population[popNum].variable; // 親個体の変数を引継ぎ
-                    console.log('pop ' + popNum + ' var : ' + population[popNum].variable);
-                    console.log('chi ' + popNum + ' var : ' + childPopulation[popNum].variable);
+                    tmpChild[popNum].variable = population[popNum].variable; // 親個体の変数を引継ぎ
+                    //console.log(' var : ' + population[popNum].variable);
                     // 交叉による変数の変更
-                    return [4 /*yield*/, CrossOver(population, childPopulation, popNum, cross_varNum, r1, r2, r3)];
+                    return [4 /*yield*/, CrossOver(population, tmpChild, popNum, cross_varNum, rNum)];
                 case 3:
+                    //console.log(' var : ' + population[popNum].variable);
                     // 交叉による変数の変更
                     _a.sent();
                     _a.label = 4;
                 case 4:
                     popNum++;
                     return [3 /*break*/, 1];
-                case 5: return [2 /*return*/];
+                case 5:
+                    childPopulation = tmpChild;
+                    return [2 /*return*/];
             }
         });
     });
 }
-function SelectPopulationNumber(r1, r2, r3, popSize) {
+function SelectPopulationNumber(popSize, rNum) {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             // 交叉のための個体番号を取得
-            r1 = getIntegerRandomNumber(0, popSize);
-            r2 = getIntegerRandomNumber(0, popSize);
-            r3 = getIntegerRandomNumber(0, popSize);
-            while (r1 === r2 || r2 === r3 || r3 === r1) {
-                r1 = getIntegerRandomNumber(0, popSize);
-                r2 = getIntegerRandomNumber(0, popSize);
-                r3 = getIntegerRandomNumber(0, popSize);
+            rNum[0] = getIntegerRandomNumber(0, popSize);
+            rNum[1] = getIntegerRandomNumber(0, popSize);
+            rNum[2] = getIntegerRandomNumber(0, popSize);
+            while (rNum[0] === rNum[1] || rNum[1] === rNum[2] || rNum[2] === rNum[0]) {
+                rNum[0] = getIntegerRandomNumber(0, popSize);
+                rNum[1] = getIntegerRandomNumber(0, popSize);
+                rNum[2] = getIntegerRandomNumber(0, popSize);
             }
             return [2 /*return*/];
         });
     });
 }
-function CrossOver(population, childPopulation, popNum, cross_varNum, r1, r2, r3) {
+function CrossOver(population, childPopulation, popNum, cross_varNum, rNum) {
     return __awaiter(this, void 0, void 0, function () {
-        var varNum;
+        var variable, varNum;
         return __generator(this, function (_a) {
+            variable = childPopulation[popNum].variable;
             // 交叉による変数の変更
             for (varNum = 0; varNum < population[popNum].variable.length - 1; varNum++) {
                 if (varNum === cross_varNum || population[popNum].cr > getRandomArbitrary(0, 1)) {
-                    childPopulation[popNum].variable[varNum] = population[r1].variable[varNum] + population[popNum].scallingFactor * (population[r2].variable[varNum] - population[r3].variable[varNum]);
-                    if (childPopulation[population[popNum].popNumber].variable[varNum] < population[popNum].lowerBound) {
-                        childPopulation[popNum].variable[varNum] = population[popNum].lowerBound;
+                    variable[varNum] = population[rNum[0]].variable[varNum] + population[popNum].scallingFactor * (population[rNum[1]].variable[varNum] - population[rNum[2]].variable[varNum]);
+                    // 上下限値の修正
+                    if (variable[varNum] < population[popNum].lowerBound) {
+                        variable[varNum] = population[popNum].lowerBound;
                     }
-                    if (childPopulation[popNum].variable[varNum] > population[popNum].upperBound) {
-                        childPopulation[popNum].variable[varNum] = population[popNum].upperBound;
+                    if (variable[varNum] > population[popNum].upperBound) {
+                        variable[varNum] = population[popNum].upperBound;
                     }
                 }
             }
+            childPopulation[popNum].variable = variable;
             return [2 /*return*/];
         });
     });
 }
 function Evaluation(population, TF) {
     return __awaiter(this, void 0, void 0, function () {
-        var childNum;
+        var tmpPopulation, popNum;
         return __generator(this, function (_a) {
-            for (childNum = 0; childNum < population.length; childNum++) {
+            tmpPopulation = population;
+            for (popNum = 0; popNum < population.length; popNum++) {
                 // 評価
-                population[childNum].evaluationValue = TF.Rastrign(population[childNum].variable);
+                tmpPopulation[popNum].evaluationValue = TF.Rastrign(population[popNum].variable);
             }
+            population = tmpPopulation;
             return [2 /*return*/];
         });
     });
 }
 function UpdatePopulation(population, childPopulation) {
     return __awaiter(this, void 0, void 0, function () {
-        var popNum;
+        var tmpPopulation, popNum;
         return __generator(this, function (_a) {
-            // 母集団の解更新
+            tmpPopulation = [];
             for (popNum = 0; popNum < population.length; popNum++) {
                 if (childPopulation[popNum].evaluationValue < population[popNum].evaluationValue) {
-                    population[popNum] = childPopulation[popNum];
+                    tmpPopulation.push(childPopulation[popNum]);
+                }
+                else {
+                    tmpPopulation.push(population[popNum]);
                 }
             }
+            population = tmpPopulation;
             return [2 /*return*/];
         });
     });
@@ -271,8 +286,31 @@ function UpdateBest(population, bestIndivArray) {
     return __awaiter(this, void 0, void 0, function () {
         var bestPopNumber;
         return __generator(this, function (_a) {
-            bestPopNumber = getBestPopulationNumber(population);
-            bestIndivArray.push(population[bestPopNumber]);
+            switch (_a.label) {
+                case 0:
+                    bestPopNumber = [];
+                    return [4 /*yield*/, getBestPopulationNumber(population, bestPopNumber)];
+                case 1:
+                    _a.sent();
+                    console.log('best num : ' + bestPopNumber);
+                    bestIndivArray.push(population[bestPopNumber[0]]);
+                    console.log('best : ' + population[bestPopNumber[0]].evaluationValue);
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+function getBestPopulationNumber(population, bestPopNumber) {
+    return __awaiter(this, void 0, void 0, function () {
+        var popNum;
+        return __generator(this, function (_a) {
+            //let bestPopNumber: number = 0;
+            bestPopNumber.push(0);
+            for (popNum = 1; popNum < population.length; popNum++) {
+                if (population[popNum].evaluationValue < population[bestPopNumber[0]].evaluationValue) {
+                    bestPopNumber[0] = popNum;
+                }
+            }
             return [2 /*return*/];
         });
     });
@@ -282,13 +320,4 @@ function getRandomArbitrary(min, max) {
 }
 function getIntegerRandomNumber(min, max) {
     return Math.floor(Math.random() * (max - min)) + min;
-}
-function getBestPopulationNumber(population) {
-    var bestPopNumber = 0;
-    for (var popNum = 1; popNum < population.length; popNum++) {
-        if (population[bestPopNumber].evaluationValue > population[popNum].evaluationValue) {
-            bestPopNumber = popNum;
-        }
-    }
-    return bestPopNumber;
 }
