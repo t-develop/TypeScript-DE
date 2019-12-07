@@ -120,7 +120,7 @@ function DifferentialEvolution(init_popSize, init_varSIze, init_generation) {
             for (generation = 1; generation < maxGeneration; generation++) {
                 childPopulation = CreateChildren(population, childPopulation); // 子個体集団の生成
                 childPopulation = PopulationEvaluation(childPopulation, TF); // 評価
-                population = UpdatePopulation(population, childPopulation); // 母集団の更新
+                population = JSON.parse(JSON.stringify(UpdatePopulation(population, childPopulation))); // 母集団の更新
                 bestIndivArray.push(UpdateBest(population)); // ベスト解の更新
                 console.log('generation : ' + generation);
             }
@@ -146,6 +146,9 @@ function CreateChildren(population, childPopulation) {
     var popSize = population.length;
     var varSize = population[0].variable.length;
     var tmpChild = childPopulation.concat();
+    for (var pop = 0; pop < childPopulation.length; pop++) {
+        tmpChild[pop].variable = childPopulation[pop].variable.concat();
+    }
     // 母集団のループ
     for (var popNum = 0; popNum < popSize; popNum++) {
         population[popNum].generation++; // 世代数の更新
@@ -173,6 +176,7 @@ function SelectPopulationNumber(popSize) {
 }
 function CrossOver(population, childPopulation, popNum, cross_varNum, rNum) {
     var variable = childPopulation[popNum].variable.concat();
+    variable = JSON.parse(JSON.stringify(childPopulation[popNum].variable));
     // 交叉による変数の変更
     for (var varNum = 0; varNum < population[popNum].variable.length; varNum++) {
         if (varNum === cross_varNum || population[popNum].cr > getRandomArbitrary(0, 1)) {
