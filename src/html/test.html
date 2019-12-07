@@ -13,7 +13,7 @@
         入力フォーム
     </h2>
     <div>
-        <form>
+        <form id="optimizationParameter">
             <p>population:
                 <input type="text" id="population" value="100">
             </p>
@@ -30,6 +30,16 @@
         <p>result:
             <p id="result"></p>
         </p>
+    </div>
+    <div id="optimizationResult">
+        <table id="table1" border="1">
+            <!-- 表 -->
+            <tr>
+                <!-- 見出し -->
+                <th>generation</th>
+                <th>best evaluation value</th>
+            </tr>
+        </table>
     </div>
 </body>
 
