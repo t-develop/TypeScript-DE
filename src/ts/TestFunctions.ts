@@ -12,9 +12,13 @@ export default class TestFunctions {
   }
 
   /**
-   * Schwefel
+   * DoublePower
   variable: Array<number> : number  */
-  public Schwefel(variable: Array<number>): number {
-    return 0;
+  public DoublePower(variable: Array<number>): number {
+    let sum: number = 0;
+    variable.forEach(variable => {
+      sum += Math.pow(Math.pow(variable, 2), 2);
+    })
+    return sum;
   }
 }

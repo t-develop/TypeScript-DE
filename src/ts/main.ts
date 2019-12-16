@@ -1,6 +1,3 @@
-//import TestFunctions from "./TestFunctions";
-//import Population from "./Population";
-
 interface IPopulation {
   variable: Array<number>;
   evaluationValue: number;
@@ -41,10 +38,14 @@ class TestFunctions {
   }
 
   /**
-   * Schwefel
+   * DoublePower
   variable: Array<number> : number  */
-  public Schwefel(variable: Array<number>): number {
-    return 0;
+  public DoublePower(variable: Array<number>): number {
+    let sum: number = 0;
+    variable.forEach(variable => {
+      sum += Math.pow(Math.pow(variable, 2), 2);
+    })
+    return sum;
   }
 }
 
@@ -63,16 +64,16 @@ async function DifferentialEvolution(init_popSize: number, init_varSIze: number,
   let popSize = init_popSize;
   let varSize = init_varSIze;
   let maxGeneration = init_generation;
-  let TF = new TestFunctions();
   let firstBest: number = 0.0;
   let cr = 0.8;
   let scallingFactor = 0.5;
   let lowerBound = -5.2;
   let upperBound = 5.2;
+  let TF = new TestFunctions();
 
   let population: Array<Population> = [];  // 母集団
   let childPopulation: Array<Population> = [];  // 子個体母集団
-  let bestIndivArray: Array<Population> = [];
+  let bestIndivArray: Array<Population> = [];  // ベスト解履歴
 
   await ResetTableRow();
 
@@ -98,7 +99,6 @@ async function DifferentialEvolution(init_popSize: number, init_varSIze: number,
 async function Optimization(population: Array<Population>, childPopulation: Array<Population>, bestIndivArray: Array<Population>, TF: TestFunctions, maxGeneration: number) {
   // 世代数分ループ
   for (let generation = 1; generation < maxGeneration; generation++) {
-
     childPopulation = CreateChildren(population, childPopulation);  // 子個体集団の生成
     childPopulation = PopulationEvaluation(childPopulation, TF);  // 評価
     population = UpdatePopulation(population, childPopulation);  // 母集団の更新
@@ -198,6 +198,7 @@ function CrossOver(population: Array<Population>, childPopulation: Array<Populat
       }
     }
   }
+
   return DeepCopy(variable);
 }
 

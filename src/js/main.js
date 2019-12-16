@@ -71,10 +71,14 @@ var TestFunctions = /** @class */ (function () {
         return 10 * variable.length + sum;
     };
     /**
-     * Schwefel
+     * DoublePower
     variable: Array<number> : number  */
-    TestFunctions.prototype.Schwefel = function (variable) {
-        return 0;
+    TestFunctions.prototype.DoublePower = function (variable) {
+        var sum = 0;
+        variable.forEach(function (variable) {
+            sum += Math.pow(Math.pow(variable, 2), 2);
+        });
+        return sum;
     };
     return TestFunctions;
 }());
@@ -139,6 +143,9 @@ function Optimization(population, childPopulation, bestIndivArray, TF, maxGenera
                     _a.label = 1;
                 case 1:
                     if (!(generation < maxGeneration)) return [3 /*break*/, 4];
+                    // memo
+                    // ディープコピーができるようになったから引数に渡して処理できるのでは？
+                    // それなら全部async/awaitで記述できるから制御が容易になる説
                     childPopulation = CreateChildren(population, childPopulation); // 子個体集団の生成
                     childPopulation = PopulationEvaluation(childPopulation, TF); // 評価
                     population = UpdatePopulation(population, childPopulation); // 母集団の更新

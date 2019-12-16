@@ -2,44 +2,48 @@
 <html>
 
 <head>
+    <link rel="stylesheet" type="text/css" href="../css/design.css">
     <script type="text/javascript" src="../js/main.js"></script>
 </head>
 
 <body>
     <h1>
-        test
+        TypeScript-DE
     </h1>
-    <h2>
-        入力フォーム
-    </h2>
-    <div>
-        <form id="optimizationParameter">
-            <p>population:
-                <input type="text" id="population" value="100">
+    <div id="container">
+        <div id="item-setting">
+            <h2>
+                Parameter Setting
+            </h2>
+            <form id="optimizationParameter">
+                <p>population:
+                    <input type="text" id="population" value="100">
+                </p>
+                <p>variable:
+                    <input type="text" id="variable" value="10">
+                </p>
+                <p>generation:
+                    <input type="text" id="generation" value="100">
+                </p>
+            </form>
+            <button id="optimization" onclick="main()">optimization</button>
+        </div>
+        <div id="optimizationResult" class="item-result">
+            <h2>
+                Optimization Result
+            </h2>
+            <p>Score:
+                <span id="result"></span>
             </p>
-            <p>variable:
-                <input type="text" id="variable" value="10">
-            </p>
-            <p>generation:
-                <input type="text" id="generation" value="100">
-            </p>
-        </form>
-    </div>
-    <button id="optimization" onclick="main()">optimization</button>
-    <div>
-        <p>result:
-            <p id="result"></p>
-        </p>
-    </div>
-    <div id="optimizationResult">
-        <table id="table1" border="1">
-            <!-- 表 -->
-            <tr>
-                <!-- 見出し -->
-                <th>generation</th>
-                <th>best evaluation value</th>
-            </tr>
-        </table>
+            <table id="table1" border="1">
+                <!-- 表 -->
+                <tr>
+                    <!-- 見出し -->
+                    <th>generation</th>
+                    <th>best evaluation value</th>
+                </tr>
+            </table>
+        </div>
     </div>
 </body>
 
